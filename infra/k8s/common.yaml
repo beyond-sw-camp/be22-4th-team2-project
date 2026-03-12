@@ -1,0 +1,61 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: db-secret
+  namespace: default
+type: Opaque
+stringData:
+  # ⚠️ 절대 실제 비밀번호를 Git에 커밋하지 마세요!
+  # 아래는 placeholder입니다. 실제 배포 시 다음 명령어로 교체하세요:
+  # kubectl create secret generic db-secret \
+  #   --from-literal=root-password='your-strong-root-password' \
+  #   --from-literal=password='your-strong-app-password' \
+  #   --from-literal=datasource-url='jdbc:mariadb://<DB-HOST>:<DB-PORT>/salesboost?allowPublicKeyRetrieval=true&useSSL=false' \
+  #   --dry-run=client -o yaml | kubectl apply -f -
+  #
+  # 환경별 DB_HOST 예시:
+  #   외부 공용 DB:           221.148.116.109:10002
+  #   Docker Desktop K8s:    host.docker.internal:3306
+  #   K8s 내부 DB (Service): mariadb.default.svc.cluster.local:3306
+  root-password: CHANGE_ME_ROOT_PASSWORD
+  password: CHANGE_ME_APP_PASSWORD
+  datasource-url: CHANGE_ME_DATASOURCE_URL
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: app-secret
+  namespace: default
+type: Opaque
+stringData:
+  # ⚠️ 절대 실제 JWT 키를 Git에 커밋하지 마세요!
+  # 아래는 placeholder입니다. 실제 배포 시 다음 명령어로 교체하세요:
+  # JWT_KEY=$(openssl rand -base64 48)
+  # kubectl create secret generic app-secret \
+  #   --from-literal=jwt-secret="$JWT_KEY" \
+  #   --dry-run=client -o yaml | kubectl apply -f -
+  jwt-secret: CHANGE_ME_JWT_SECRET_KEY
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+  namespace: default
+data:
+  DB_DATABASE: "salesboost"
+  DB_USERNAME: "team2"
+  # ⚠️ 프로덕션 배포 전 반드시 실제 도메인으로 변경 (예: https://salesboost.com)
+  # localhost는 개발 환경 전용. 변경하지 않으면 프론트엔드 CORS 에러 발생
+  APP_CORS_ALLOWED_ORIGINS: "http://localhost,http://localhost:80"
+  # 프로덕션에서는 validate 사용 (update는 스키마 자동 변경 위험)
+  SPRING_JPA_HIBERNATE_DDL_AUTO: "validate"
+  # Logstash 접속 주소 (K8s 내부 Service DNS 사용)
+  # K8s 외부 Logstash 사용 시: 실제 IP/도메인으로 변경 (예: "192.168.1.100:5001")
+  LOGSTASH_HOST: "logstash:5001"
+
+
+# ⚠️ uploads-pvc 제거됨: ReadWriteOnce PVC는 HPA 스케일아웃 시 Multi-Attach 에러 발생
+# 현재 backend.yaml에서 emptyDir로 대체 (파드별 임시 저장소)
+# 운영 환경에서는 AWS S3 또는 MinIO 오브젝트 스토리지로 파일 업로드 로직 전환 필요

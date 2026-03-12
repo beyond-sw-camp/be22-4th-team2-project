@@ -1,0 +1,37 @@
+# Git
+.git
+.gitignore
+
+# Gradle build output (.gradle 캐시만 제외, build/libs는 JAR 복사에 필요)
+build/classes
+build/generated
+build/reports
+build/resources
+build/test-results
+build/tmp
+.gradle
+
+# IDE
+.idea
+*.iml
+.vscode
+
+# Frontend (별도 Dockerfile로 빌드)
+frontend
+
+# Infrastructure (Docker 이미지에 불필요)
+infra
+docs
+
+# Environment / Secrets
+.env
+.env.*
+
+# Docker
+docker-compose.yml
+Dockerfile
+.dockerignore
+
+# CI/CD
+Jenkinsfile
+.claude
